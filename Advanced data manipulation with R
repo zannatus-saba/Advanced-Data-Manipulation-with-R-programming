@@ -1,0 +1,89 @@
+## Scrape Data
+library(rvest)
+library(data.table)
+
+wiki_html = read_html('https://en.wikipedia.org/wiki/Economic_impact_of_the_COVID-19_pandemic_in_the_United_States')
+
+find_code = html_nodes(wiki_html, xpath='//div[@class="mw-parser-output"]/table[@class="wikitable"]')
+
+wiki_table = html_table(find_code,fill=TRUE)
+
+covid_data =  wiki_table[[1]]
+
+# Transpose the data
+covid_data_t = transpose(covid_data)
+
+# Extract the 1st row of data, to be used as header
+names(covid_data_t) = covid_data_t[1,]
+
+# Remove the first row of data, which is a duplicate now
+covid_data_t <- covid_data_t[-1,]
+
+# Adjust the indexing of the data
+rownames(covid_data_t) <- 1:nrow(covid_data_t)
+
+library(tibble)
+
+covid_data_t2 = add_column(covid_data_t, month = c('Feb','Mar','Apr','May','June','July','August'))
+
+## Rename Columns
+library(rvest)
+library(data.table)
+library(tibble)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(dplyr)
+covid=read_tsv("covid1.txt")
+
+#renaming column
+(covid6 = covid %>%
+    rename('Jobs, level (000s)'=jobs_lvl, 'Jobs, monthly change (000s)'=jobs_mth,
+           'Unemployment rate %' = unemp_rate, 'Number unemployed (millions)'=unemp_mil,
+           'Employment to population ratio %, age 25–54' = emp_pop,
+           'Inflation rate % (CPI-All)'=infl_rate,
+           'Stock market S&P 500 (avg. level)'=snp500_mean,
+           'Debt held by public ($ trillion)'=public_debt))
+
+library(stringr)
+sapply(covid, class)
+
+#removing comma
+covid$jobs_lvl = str_remove_all(covid$jobs_lvl, ',')
+covid$unemp_rate = str_remove_all(covid$unemp_rate, ',')
+covid$unemp_mil = str_remove_all(covid$unemp_mil,',')
+covid$emp_pop = str_remove_all(covid$emp_pop, ',')
+covid$infl_rate = str_remove_all(covid$infl_rate,',')
+covid$snp500_mean = str_remove_all(covid$snp500_mean, ',')
+covid$public_debt = str_remove_all(covid$public_debt, ',')
+
+
+#converting columns into numeric
+char_columns <- sapply(covid, is.character)             # Identify character columns
+data_chars_as_num <- covid                              # Replicate data
+covid=data_chars_as_num[ , char_columns] <- as.data.frame(apply(data_chars_as_num[ , char_columns], 2, as.numeric))
+sapply(covid, class)  
+
+#all columns that start with a j or contain an a 
+covid2= covid %>%
+  select(starts_with('j') | contains("a"))
+
+#jobs_lvl was greater than 135,000
+
+covid2 %>% 
+  filter(jobs_lvl > 135000)
+
+covid3 = covid2 %>% 
+  select(starts_with('j') | contains("a")) %>%
+  filter(jobs_lvl > 135000)
+
+#mean & median of job_lvl
+covid %>%
+  summarise(median(jobs_lvl))
+
+covid %>%
+  summarise(mean(jobs_lvl))
+
+
+
+
